@@ -1,0 +1,29 @@
+#map-container {
+    width: 100vw;
+}
+
+.popup-container {
+    max-width:180px;
+}
+
+.popup-title {
+    font-size:14px;
+    color:#2E74B4;
+    padding: 1px;
+    padding-bottom: 3px;
+}
+
+.popup-cell {
+    vertical-align: top; 
+    padding: 1px; 
+    padding-bottom: 2px;
+}
+
+.popup-cell-title {
+    color:#2E74B4;   
+}
+
+.popup-button {
+    width:170px; 
+    background-color:#2E74B4 !important
+}
