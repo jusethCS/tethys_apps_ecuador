@@ -412,14 +412,14 @@ def get_stations(request):
     db= create_engine(tokencon)
     conn = db.connect()
     # Query to database
-    stations = pd.read_sql("select * from stations", conn);
+    stations = pd.read_sql("select *, concat(codigo, ' - ', left(nombre, 23)) from stations", conn);
     conn.close()
     stations = to_geojson(
         df = stations,
         lat = "latitud",
         lon = "longitud",
         properties = ["cuenca", "codigo", "nombre", "latitud", "longitud", "elevacion", "comid", "rio", 
-                      "provincia", "parroquia", "canton", "alerta"]
+                      "provincia", "parroquia", "canton", "alerta", "concat"]
     )
     return JsonResponse(stations)
 
