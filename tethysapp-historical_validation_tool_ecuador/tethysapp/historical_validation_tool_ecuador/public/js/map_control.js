@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------------------------------------------ //
-//                                        JSONs DE LOCALIDADES Y CUENCAS                                        //
+//                                    DATA ON LOCALITIES AND BASIN DISTRICTS                                    //
 // ------------------------------------------------------------------------------------------------------------ //
 
 // Localities
@@ -48,27 +48,30 @@ const basin_url = `${server}/static/historical_validation_tool_ecuador/geojson/b
 
 
 
+
+
 // ------------------------------------------------------------------------------------------------------------ //
-//                                                 MAP CONTROL                                                  //
+//                                           MAP CONTROL - CONTAINER                                            //
 // ------------------------------------------------------------------------------------------------------------ //
 
-// Generar el control
+// Define the control panel container
 var info = L.control({position:'bottomleft'}); 
 
+// Configure the control panel container
 info.onAdd = function (map) {
-    // Localities
+    // Generate options for Localities
     loc = loc.map((item) => {
             var option_custom = `<option value="${item.file}">${item.name}</option>`;
             return(option_custom);
           }).join("");
           
-    // River basin districts
+    // Generate options for River basin districts
     basin = basin.map((item) => {
         var option_custom = `<option value="${item.file}">${item.name}</option>`;
         return(option_custom);
       }).join("");
     
-    // Modify DOM
+    // Create the control panel DOM
     this._div = L.DomUtil.create('div', 'control')
     this._div.innerHTML =  `<div class="control-group">
                                 <label class="label-control" for="select-loc">Niveles de alerta:</label>
@@ -116,7 +119,10 @@ info.onAdd = function (map) {
                                 </select>
                                 <br>
                                 <label class="label-control" for="select-station">Estación hidrológica:</label>
-                                <select id="select-station" multiple placeholder="Escriba el código de la estación."></select>
+                                <select id="select-station" multiple placeholder="Escriba el código o nombre de la estación."></select>
+                                <br>
+                                <label class="label-control" for="select-river">Nombre de río:</label>
+                                <select id="select-river" multiple placeholder="Escriba el nombre del río de interés."></select>
                                 <br>
                                 <label for="shpFile" class="label-control">Area geográfica:</label>
                                 <input class="form-control" type="file" id="shpFile" accept=".shp">
@@ -125,20 +131,31 @@ info.onAdd = function (map) {
                                 
                             </div>`;
     return this._div;
-}; 
+};
+
+// Add the control panel container to the map
 info.addTo(map);
 
 
+
+// ------------------------------------------------------------------------------------------------------------ //
+//                                     MAP CONTROL - SELECT BOXES AND ZOOM                                      //
+// ------------------------------------------------------------------------------------------------------------ //
+
+// Select box for ZOOM to localities (Provincias)
 $('#select-loc').selectize({
-    create: true,
+    create: false,
     sortField: { field: 'text', direction: 'asc'},
     onChange: function(value, isOnInitialize) {
+        // Retrieve geojson from REST API
         fetch(`${loc_url}${value}`)
         .then((response) => (layer = response.json()))
         .then((layer) => {
+            // Remove the current layer
             if (typeof layerSHP !== 'undefined') {
                 map.removeLayer(layerSHP)
             }
+            // Add retrieved layer and fit to map
             layerSHP = L.geoJSON(layer, { style: { weight: 1 } }).addTo(map);
             map.fitBounds(layerSHP.getBounds());
         });
@@ -146,16 +163,20 @@ $('#select-loc').selectize({
 });
 
 
+// Select box for ZOOM to to basin district
 $('#select-basin').selectize({
     create: true,
     sortField: { field: 'text', direction: 'asc'},
     onChange: function(value, isOnInitialize) {
+        // Retrieve geojson from REST API
         fetch(`${basin_url}${value}`)
         .then((response) => (layer = response.json()))
         .then((layer) => {
+            // Remove the current layer
             if (typeof layerSHP !== 'undefined') {
                 map.removeLayer(layerSHP)
             }
+            // Add retrieved layer and fit to map
             layerSHP = L.geoJSON(layer, { style: { weight: 1 } }).addTo(map);
             map.fitBounds(layerSHP.getBounds());
         });
@@ -163,23 +184,76 @@ $('#select-basin').selectize({
 });
 
 
+//  Select box for ZOOM to stations and rivers
 fetch("get-stations")
     .then((response) => (layer = response.json()))
     .then((layer) => {
+        // Format json as input of selectize
         est_layer = layer.features.map(item => item.properties);
+        // Rendering the select box for stations
         $('#select-station').selectize({
             maxItems: 1,
-            valueField: 'codigo',
-            labelField: 'codigo',
-            searchField: 'codigo',
             options: est_layer,
-            create: true,
+            valueField: 'codigo',
+            labelField:  'concat',
+            searchField: ['codigo', 'nombre'],
+            create: false,
             onChange: function(value, isOnInitialize) {
                 // Station item selected
                 est_item = est_layer.filter(item => item.codigo == value)[0];
+                // Remove marker if exists
+                if (typeof ss_marker !== 'undefined') {
+                    map.removeLayer(ss_marker)
+                }
+                // Add marker to selected station
+                ss_marker = L.circleMarker([est_item.latitud, est_item.longitud], {
+                    radius : 7,
+                    color  : '#AD2745',
+                    opacity: 0.75,
+                  }).addTo(map);
                 // Bounds
                 southWest = L.latLng(est_item.latitud - 0.01, est_item.longitud - 0.01);
                 northEast = L.latLng(est_item.latitud + 0.01, est_item.longitud + 0.01);
+                bounds = L.latLngBounds(southWest, northEast);
+                // Fit the map
+                map.fitBounds(bounds);
+            }
+        });
+
+        // Rendering the select box for rivers
+        $('#select-river').selectize({
+            maxItems: 1,
+            options: est_layer,
+            valueField:  'rio',
+            labelField:  'rio',
+            searchField: 'rio',
+            create: false,
+            onChange: function(value, isOnInitialize) {
+                // Station item selected
+                river_item = est_layer.filter(item => item.rio == value);
+                // Remove marker if exists
+                if (typeof ss_marker !== 'undefined') {
+                    map.removeLayer(ss_marker)
+                }
+                // Create the layer Groups that contain the selected stations
+                ss_marker = L.layerGroup();
+                // Add marker to visualize the selected stations
+                river_item.map(item => {
+                    //L.marker([item.latitud, item.longitud]).addTo(ss_river)
+                    L.circleMarker([item.latitud, item.longitud], {
+                        radius : 7,
+                        color  : '#AD2745',
+                        opacity: 0.75,
+                      }).addTo(ss_marker);
+                });
+                ss_marker.addTo(map);
+                
+                // Coordinates of selected stations
+                lon_item = river_item.map(item => item.longitud);
+                lat_item = river_item.map(item => item.latitud);
+                // Bounds
+                southWest = L.latLng(Math.min(...lat_item), Math.min(...lon_item));
+                northEast = L.latLng(Math.max(...lat_item), Math.max(...lon_item));
                 bounds = L.latLngBounds(southWest, northEast);
                 // Fit the map
                 map.fitBounds(bounds);
