@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
 from tethys_sdk.routing import controller
-from tethys_sdk.gizmos import PlotlyView
+from tethys_sdk.gizmos import PlotlyView, DatePicker
 
 # Postgresql
 import psycopg2
@@ -187,6 +187,42 @@ def get_corrected_forecast_records(records_df, simulated_df, observed_df):
         fixed_records = fixed_records.append(corrected_values)
     fixed_records.sort_index(inplace=True)
     return(fixed_records)
+
+
+def get_forecast_date(comid, date):
+    url = 'https://geoglows.ecmwf.int/api/ForecastEnsembles/?reach_id={0}&date={1}&return_format=csv'.format(comid, date)
+    status = False
+    while not status:
+      try:
+        outdf = pd.read_csv(url, index_col=0)
+        status = True
+      except:
+        print("Trying to retrieve data...")
+    # Filter and correct data
+    outdf[outdf < 0] = 0
+    outdf.index = pd.to_datetime(outdf.index)
+    outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+    outdf.index = pd.to_datetime(outdf.index)
+    return(outdf)
+
+
+def get_forecast_record_date(comid, date):
+    idate = dt.datetime.strptime(date, '%Y%m%d') - dt.timedelta(days=10)
+    idate = idate.strftime('%Y%m%d')
+    url = 'https://geoglows.ecmwf.int/api/ForecastRecords/?reach_id={0}&start_date={1}&end_date={2}&return_format=csv'.format(comid, idate, date)
+    status = False
+    while not status:
+      try:
+        outdf = pd.read_csv(url, index_col=0)
+        status = True
+      except:
+        print("Trying to retrieve data...")
+    # Filter and correct data
+    outdf[outdf < 0] = 0
+    outdf.index = pd.to_datetime(outdf.index)
+    outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+    outdf.index = pd.to_datetime(outdf.index)
+    return(outdf)
 
 
 
@@ -429,9 +465,13 @@ def get_stations(request):
 @controller(name='get_historical_data',url='historical-validation-tool-ecuador/get-historical-data')
 def get_historical_data(request):
     # Retrieving GET arguments
+    global station_code
     station_code = request.GET['codigo']
+    global station_comid
     station_comid = request.GET['comid']
+    global station_name
     station_name = request.GET['nombre']
+    global plot_width
     plot_width = float(request.GET['width']) - 12
     plot_width_2 = 0.5*plot_width
 
@@ -443,15 +483,21 @@ def get_historical_data(request):
     observed_data = get_format_data("select datetime, {0} from observed_data order by datetime;".format(station_code), conn)
     simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
     corrected_data = get_bias_corrected_data(simulated_data, observed_data)
+    global observed_data_s
+    observed_data_s = observed_data
+    global simulated_data_s
+    simulated_data_s = simulated_data
 
     # Raw forecast
     ensemble_forecast = get_format_data("select * from f_{0};".format(station_comid), conn)
     forecast_records = get_format_data("select * from fr_{0};".format(station_comid), conn)
+    global return_periods
     return_periods = get_return_periods(station_comid, simulated_data)
 
     # Corrected forecast
     corrected_ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
     corrected_forecast_records = get_corrected_forecast_records(forecast_records, simulated_data, observed_data)
+    global corrected_return_periods
     corrected_return_periods = get_return_periods(station_comid, corrected_data)
 
     # Stats for raw and corrected forecast
@@ -551,7 +597,7 @@ def get_historical_data(request):
         "log_data_scatter_plot": PlotlyView(log_data_scatter_plot.update_layout(width = plot_width_2)),
         "acumulated_volume_plot": PlotlyView(acumulated_volume_plot.update_layout(width = plot_width)),
         "ensemble_forecast_plot": PlotlyView(ensemble_forecast_plot.update_layout(width = plot_width)),
-        "corrected_ensemble_forecast_plot": PlotlyView(corrected_ensemble_forecast_plot.update_layout(width = plot_width))
+        "corrected_ensemble_forecast_plot": PlotlyView(corrected_ensemble_forecast_plot.update_layout(width = plot_width)),
     }
     return render(request, 'historical_validation_tool_ecuador/panel.html', context)
 
@@ -580,5 +626,66 @@ def get_forecast_table(request):
 
 
 @controller(name='get_corrected_forecast_table',url='historical-validation-tool-ecuador/get-corrected-forecast-table')
-def get_forecast_table(request):
+def get_corrected_forecast_table(request):
     return HttpResponse(corrected_forecast_table)
+
+
+
+
+
+
+@controller(name='get_raw_forecast_date',url='historical-validation-tool-ecuador/get-raw-forecast-date')
+def get_raw_forecast_date(request):
+    forecast_date = request.GET['fecha']
+    # Raw forecast
+    ensemble_forecast = get_forecast_date(station_comid, forecast_date)
+    forecast_records = get_forecast_record_date(station_comid, forecast_date)
+    corrected_ensemble_forecast = get_corrected_forecast(simulated_data_s, ensemble_forecast, observed_data_s)
+    corrected_forecast_records = get_corrected_forecast_records(forecast_records, simulated_data_s, observed_data_s)
+    # Forecast stats
+    ensemble_stats = get_ensemble_stats(ensemble_forecast)
+    corrected_ensemble_stats = get_ensemble_stats(corrected_ensemble_forecast)
+    # Plotting raw forecast
+    ensemble_forecast_plot = get_forecast_plot(
+                                comid = station_comid, 
+                                site = station_name, 
+                                stats = ensemble_stats, 
+                                rperiods = return_periods, 
+                                records = forecast_records).update_layout(width = plot_width).to_html()
+    # Plotting corrected forecast
+    global corrected_ensemble_forecast_plot_s
+    corrected_ensemble_forecast_plot_s = get_forecast_plot(
+                                            comid = station_comid, 
+                                            site = station_name, 
+                                            stats = corrected_ensemble_stats, 
+                                            rperiods = corrected_return_periods, 
+                                            records = corrected_forecast_records).update_layout(width = plot_width).to_html()
+    # Percent of Ensembles that Exceed Return Periods
+    global forecast_table_s
+    forecast_table_s = geoglows.plots.probabilities_table(
+                        ensemble_stats,
+                        ensemble_forecast, 
+                        return_periods)
+    global corrected_forecast_table_s
+    corrected_forecast_table_s = geoglows.plots.probabilities_table(
+                                    corrected_ensemble_stats,
+                                    corrected_ensemble_forecast, 
+                                    corrected_return_periods)
+    return HttpResponse(ensemble_forecast_plot)
+    
+
+@controller(name='get_corrected_forecast_date',url='historical-validation-tool-ecuador/get-corrected-forecast-date')
+def get_corrected_forecast_date(request):
+    return HttpResponse(corrected_ensemble_forecast_plot_s)
+
+
+@controller(name='get_forecast_table_s',url='historical-validation-tool-ecuador/get-forecast-table-s')
+def get_forecast_table_s(request):
+    return HttpResponse(forecast_table_s)
+
+
+@controller(name='get_corrected_forecast_table_s',url='historical-validation-tool-ecuador/get-corrected-forecast-table-s')
+def get_corrected_forecast_table_s(request):
+    return HttpResponse(corrected_forecast_table_s)
+
+

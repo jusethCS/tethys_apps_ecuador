@@ -111,7 +111,7 @@ async function get_data_station(code, comid, name, river, basin, latitude, longi
     $("#station-locality2-custom").html(`<b>CANTON:</b> &nbsp ${locality2.toUpperCase()}`)
     $("#station-locality3-custom").html(`<b>PARROQUIA:</b> &nbsp ${locality3.toUpperCase()}`)
 
-    const loader = `<div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+    loader = `<div class="loading-container" style="height: 350px; padding-top: 12px;"> 
                         <div class="loading"> 
                         <h2>LOADIND DATA</h2>
                             <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
@@ -244,11 +244,6 @@ window.onload = function () {
     .then((layer) => {
       riv = L.geoJSON(layer, { style: { weight: 1 } }).addTo(map);
       map.fitBounds(riv.getBounds());
-      //map.almostOver.addLayer(riv);
-      //map.on('almost:click', function (e) {
-      //    var layer = e.layer.feature.properties;
-      //    console.log(layer)
-      //});
     });
 
   // Load stations

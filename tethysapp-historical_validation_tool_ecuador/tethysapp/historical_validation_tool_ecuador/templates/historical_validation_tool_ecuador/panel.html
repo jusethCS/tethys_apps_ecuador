@@ -3,6 +3,7 @@
 {% block import_gizmos %}
     {% import_gizmo_dependency plotly_view %}
     {% import_gizmo_dependency datatable_view %}
+    {% import_gizmo_dependency date_picker %}
 {% endblock %}
 
 {% block panel_options %}
@@ -144,20 +145,138 @@
             <div id="metrics-table-panel"></div>
         </div>
         <div class="tab-pane fade" id="forecast" role="tabpanel" aria-labelledby="forecast-tab">
-            <div class="container-fluid">
-                {% gizmo ensemble_forecast_plot %}
-            </div>
-            <div class="container-fluid" id="forecast-table"></div>
-            <br>
+            {% block forecast_raw %}
+                <br>
+                <div style="padding-left: 12px"><b>Fecha de inicialización:</b></div>
+                <div class="input-group" style="padding-left: 12px; padding-right: 12px;">
+                    <input type="text" class="form-control" id="datepicker_raw">
+                    <button class="btn btn-primary btn-sm" type="button" id="button_datepicker_raw">Actualizar</button>
+                </div>
+                <div class="container-fluid" id="ensemble_forecast_plot">
+                    {% gizmo ensemble_forecast_plot %}
+                </div>
+                <div class="container-fluid" id="forecast-table"></div>
+                <br>
+            {% endblock %}
         </div>
+
         <div class="tab-pane fade" id="corrected-forecast" role="tabpanel" aria-labelledby="corrected-forecast-tab">
-            <div class="container-fluid">
+            <br>
+            <div style="padding-left: 12px;"><b>Fecha de inicialización:</b></div>
+            <div class="input-group" style="padding-left: 12px; padding-right: 12px;">
+                <input type="text" class="form-control" id="datepicker_cor">
+                <button class="btn btn-primary btn-sm" type="button" id="button_datepicker_cor">Actualizar</button>
+            </div>
+            <div class="container-fluid" id="corrected_ensemble_forecast_plot">
                 {% gizmo corrected_ensemble_forecast_plot %}
             </div>
             <div class="container-fluid" id="corrected-forecast-table"></div>
             <br>
         </div>
     </div>
+    <script>
+        datepicker_raw = flatpickr("#datepicker_raw", {
+            minDate: new Date().fp_incr(-45),
+            maxDate: "today",
+            defaultDate: "today",
+            dateFormat: "Ymd",
+            altInput: true,
+            altFormat: "F j, Y",
+            enableTime: false,
+            locale: "es"
+        });
+        datepicker_cor = flatpickr("#datepicker_cor", {
+            minDate: new Date().fp_incr(-45),
+            maxDate: "today",
+            defaultDate: "today",
+            dateFormat: "Ymd",
+            altInput: true,
+            altFormat: "F j, Y",
+            enableTime: false,
+            locale: "es"
+        });
+
+        loader = `<div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+                        <div class="loading"> 
+                        <h2>LOADIND DATA</h2>
+                            <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                        </div>
+                    </div>`;
+
+        $("#button_datepicker_raw").on("click", function(){
+            forecast_date = $("#datepicker_raw").val();
+            datepicker_cor.setDate(forecast_date)
+            $("#ensemble_forecast_plot").html(loader);
+            $("#corrected_ensemble_forecast_plot").html(loader);
+            $("#forecast-table").html("");
+            $("#corrected-forecast-table").html("");
+            // Retrieve the raw forecast
+            $.ajax({
+                type: 'GET', 
+                url: "get-raw-forecast-date",
+                data: { fecha: forecast_date }
+            }).done(function(response){
+                $("#ensemble_forecast_plot").html(response);  
+                $.ajax({
+                    type: 'GET', 
+                    url: "get-forecast-table-s",
+                }).done(function(response){
+                    $("#forecast-table").html(response)
+                })
+                // Retrieve the corrected forecast
+                $.ajax({
+                    type: 'GET', 
+                    url: "get-corrected-forecast-date",
+                    data: { fecha: forecast_date }
+                }).done(function(response){
+                    $("#corrected_ensemble_forecast_plot").html(response);  
+                    $.ajax({
+                        type: 'GET', 
+                        url: "get-corrected-forecast-table-s",
+                    }).done(function(response){
+                        $("#corrected-forecast-table").html(response)
+                    })
+                })
+            })    
+        })
+
+        $("#button_datepicker_cor").on("click", function(){
+            forecast_date = $("#datepicker_cor").val();
+            datepicker_raw.setDate(forecast_date)
+            $("#ensemble_forecast_plot").html(loader);
+            $("#corrected_ensemble_forecast_plot").html(loader);
+            $("#forecast-table").html("");
+            $("#corrected-forecast-table").html("");
+            // Retrieve the raw forecast
+            $.ajax({
+                type: 'GET', 
+                url: "get-raw-forecast-date",
+                data: { fecha: forecast_date }
+            }).done(function(response){
+                $("#ensemble_forecast_plot").html(response);  
+                $.ajax({
+                    type: 'GET', 
+                    url: "get-forecast-table-s",
+                }).done(function(response){
+                    $("#forecast-table").html(response)
+                })
+                // Retrieve the corrected forecast
+                $.ajax({
+                    type: 'GET', 
+                    url: "get-corrected-forecast-date",
+                    data: { fecha: forecast_date }
+                }).done(function(response){
+                    $("#corrected_ensemble_forecast_plot").html(response);  
+                    $.ajax({
+                        type: 'GET', 
+                        url: "get-corrected-forecast-table-s",
+                    }).done(function(response){
+                        $("#corrected-forecast-table").html(response)
+                    })
+                })
+            })    
+        })
+    </script>
 
 
 
