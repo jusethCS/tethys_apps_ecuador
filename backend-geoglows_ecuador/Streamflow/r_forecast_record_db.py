@@ -58,11 +58,11 @@ data = pd.read_excel('Ecuador_Geoglows_Drainage.xlsx', index_col=0)
 db= create_engine(token)
 
 
-n = len(data.COMID) + 1
+n = len(data.comid) + 1
 
 for i in range(1,n):
     # State variable
-    comid = data.COMID[i]
+    comid = data.comid[i]
     # Progress
     prog = round(100 * i/n, 3)
     print("Progress: {0} %. Comid: {1}".format(prog, comid))
