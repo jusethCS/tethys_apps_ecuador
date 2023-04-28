@@ -110,7 +110,7 @@ def get_ensemble_stats(ensemble):
 #                                    Warning if exceed x return period                                        #
 ###############################################################################################################
 def is_warning(arr):
-    cond = [i >= 50 for i in arr].count(True) > 0
+    cond = [i >= 25 for i in arr].count(True) > 0
     return(cond)
 
 def get_excced_rp(stats: pd.DataFrame, ensem: pd.DataFrame, rperiods: pd.DataFrame):
@@ -176,7 +176,6 @@ def get_excced_rp(stats: pd.DataFrame, ensem: pd.DataFrame, rperiods: pd.DataFra
         alarm = "R50"
     if(is_warning(r100)):
         alarm = "R100"
-    #out = pd.DataFrame({"rp2": r2, "rp5": r5, "rp10": r10, "rp25": r25, "rp50": r50, "rp100": r100})
     return(alarm)
 
 
@@ -245,7 +244,7 @@ for i in range(n):
     # Forecast stats
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     # Warning if excced a given return period in 10% of emsemble
-    stations.alerta[i] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
+    stations.loc[i, ['alerta']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
 
 
 # Insert to database
