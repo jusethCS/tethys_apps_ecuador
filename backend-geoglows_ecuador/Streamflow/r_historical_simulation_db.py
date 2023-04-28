@@ -1,7 +1,18 @@
-# Libraries and dependencies
+# Import libraries and dependencies
+import os
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+# Import enviromental variables
+load_dotenv()
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_NAME = os.getenv('DB_NAME')
+
+# Generate the conection token
+token = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
 
 
 # Function to retrieve data from GESS API
@@ -43,7 +54,7 @@ def insert_data(db, comid):
 data = pd.read_excel('Ecuador_Geoglows_Drainage.xlsx', index_col=0)
 
 # Setting the connetion to db
-db= create_engine("postgresql+psycopg2://postgres:pass@localhost:5432/gess_streamflow")
+db= create_engine(token)
 
 
 n = len(data.COMID) + 1
