@@ -1,5 +1,5 @@
 # This file should be committed to your app code.
-version: 1.1
+version: 2.0
 # This should be greater or equal to your tethys-platform in your environment
 tethys_version: ">=4.0.0"
 # This should match the app - package name in your setup.py
@@ -10,9 +10,18 @@ requirements:
   skip: false
   conda:
     channels:
+      - conda-forge
+      - anaconda
     packages:
-
+      - psycopg2
+      - pandas
+      - sqlalchemy
+      - openpyxl
+      - geoglows
+      - lxml
+      - python-dotenv
   pip:
+    - pandas_geojson
 
   npm:
 
