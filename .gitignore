@@ -11,3 +11,5 @@
 services.yml
 .vscode
 .env
+*.cer
+config-server.sh
