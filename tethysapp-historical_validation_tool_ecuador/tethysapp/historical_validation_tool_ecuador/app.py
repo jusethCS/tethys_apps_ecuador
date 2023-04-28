@@ -12,7 +12,7 @@ class HistoricalValidationToolEcuador(TethysAppBase):
     index = 'home'
     icon = f'{package}/images/icon.gif'
     root_url = 'historical-validation-tool-ecuador'
-    color = '#c23616'
+    color = '#4074dd'
     tags = '"Geoglows", "Ecuador", "Historical data", "Flood forecast"'
     enable_feedback = False
     feedback_emails = []

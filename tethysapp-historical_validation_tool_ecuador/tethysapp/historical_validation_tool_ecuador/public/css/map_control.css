@@ -1,14 +1,14 @@
 .control {
     height: 650px;
     width: 300px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(32, 41, 92, 0.8);
     padding: 10px;
 }
 
 
 .label-control {
     font-size: 14px !important;
-    color: #2E74B4;
+    color: #fcbf10;
     font-weight: bold;
     padding-bottom: 5px;
     padding-left: 3px;
@@ -25,6 +25,10 @@
 
 .form-control {
     font-size: 13px !important;
+}
+
+.alert-panel-checkbox .form-check-label {
+    color: white !important;
 }
 
 .control-group .btn-outline-primary {

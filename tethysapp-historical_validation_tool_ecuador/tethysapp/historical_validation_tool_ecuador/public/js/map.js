@@ -242,7 +242,7 @@ window.onload = function () {
   )
     .then((response) => (layer = response.json()))
     .then((layer) => {
-      riv = L.geoJSON(layer, { style: { weight: 1 } }).addTo(map);
+      riv = L.geoJSON(layer, { style: { weight: 1, color: "#4747C9" } }).addTo(map);
       map.fitBounds(riv.getBounds());
     });
 

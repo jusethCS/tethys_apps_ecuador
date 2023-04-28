@@ -8,7 +8,7 @@
 
 .popup-title {
     font-size:14px;
-    color:#2E74B4;
+    color: rgba(32, 41, 92, 0.8) !important; 
     padding: 1px;
     padding-bottom: 3px;
 }
@@ -20,10 +20,15 @@
 }
 
 .popup-cell-title {
-    color:#2E74B4;   
+    color: rgba(32, 41, 92, 0.8) !important;   
 }
 
 .popup-button {
     width:170px; 
-    background-color:#2E74B4 !important
+    background-color: rgba(32, 41, 92, 0.9) !important; 
+    border: 1px solid  rgba(32, 41, 92, 0.9) !important;
+}
+
+.popup-button:hover {
+    background-color: rgba(32, 41, 92, 0.95) !important;
 }
