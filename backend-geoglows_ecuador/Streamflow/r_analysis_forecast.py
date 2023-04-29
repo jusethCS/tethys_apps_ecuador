@@ -11,6 +11,12 @@ import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
+# Change the work directory
+user = os.getlogin()
+user_dir = os.path.expanduser('~{}'.format(user))
+os.chdir(user_dir)
+os.chdir("tethys_apps_ecuador/backend-geoglows_ecuador/Streamflow")
+
 # Import enviromental variables
 load_dotenv()
 DB_USER = os.getenv('DB_USER')
