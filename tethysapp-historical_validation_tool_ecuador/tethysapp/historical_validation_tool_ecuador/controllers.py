@@ -611,11 +611,21 @@ def get_metrics(request):
 
 @controller(name='get_metrics_custom',url='historical-validation-tool-ecuador/get-metrics-custom')
 def get_metrics_custom(request):
+    # Combine metrics
+    my_metrics_1 = ["ME", "RMSE", "NRMSE (Mean)", "NSE", "KGE (2009)", "KGE (2012)", "R (Pearson)", "R (Spearman)", "r2"]
+    my_metrics_2 = request.GET['metrics'].split(",")
+    lista_combinada = my_metrics_1 + my_metrics_2
+    elementos_unicos = []
+    elementos_vistos = set()
+    for elemento in lista_combinada:
+        if elemento not in elementos_vistos:
+            elementos_unicos.append(elemento)
+            elementos_vistos.add(elemento)
     # Compute metrics
     metrics_table = get_metrics_table(
                         merged_cor = merged_cor,
                         merged_sim = merged_sim,
-                        my_metrics = request.GET['metrics'].split(","))
+                        my_metrics = elementos_unicos)
     return HttpResponse(metrics_table)
 
 
