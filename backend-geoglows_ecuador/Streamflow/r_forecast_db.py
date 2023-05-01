@@ -29,7 +29,10 @@ def get_data(comid):
     while not status:
       try:
         outdf = pd.read_csv(url, index_col=0)
-        status = True
+        if(outdf.shape[1]==52):
+           status = True
+        else:
+           raise ValueError("Dataframe has not 52 emsembles.")
       except:
         print("Trying to retrieve data...")
     # Filter and correct data
@@ -37,9 +40,6 @@ def get_data(comid):
     outdf.index = pd.to_datetime(outdf.index)
     outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
     outdf.index = pd.to_datetime(outdf.index)
-    # Creating result
-    #outdf = {"fecha": outdf.index, "dato": outdf["streamflow_m^3/s"]}
-    #outdf = pd.DataFrame(outdf)
     return(outdf)
 
 
