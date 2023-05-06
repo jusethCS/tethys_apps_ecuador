@@ -62,7 +62,7 @@ const IconR100 = IconMarker("100");       // RP: 100 years
 
 // Customized icon function
 function IconParse(feature, latlng) {
-    switch (feature.properties.alerta) {
+    switch (feature.properties.alert) {
         case "R0":
             StationIcon = IconR000;
             break;
@@ -177,19 +177,19 @@ function onEachFeature(feature, layer) {
                 "<tbody>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>CODIGO: </th>"+
-                        "<td class='popup-cell'>" + feature.properties.codigo.toUpperCase() + "</td>"+
+                        "<td class='popup-cell'>" + feature.properties.code.toUpperCase() + "</td>"+
                     "</tr>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>NOMBRE: </th>"+
-                        "<td class='popup-cell'>" + feature.properties.nombre.toUpperCase().slice(0,20) + "</td>"+
+                        "<td class='popup-cell'>" + feature.properties.name.toUpperCase().slice(0,20) + "</td>"+
                     "</tr>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>RIO: </th>"+
-                        "<td class='popup-cell'>" + feature.properties.rio.toUpperCase() + "</td>"+
+                        "<td class='popup-cell'>" + feature.properties.river.toUpperCase() + "</td>"+
                     "</tr>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>CUENCA: </th>"+
-                        "<td class='popup-cell'>" + feature.properties.cuenca.toUpperCase() + "</td>"+
+                        "<td class='popup-cell'>" + feature.properties.basin.toUpperCase() + "</td>"+
                     "</tr>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>LATITUD: </th>"+
@@ -201,7 +201,7 @@ function onEachFeature(feature, layer) {
                     "</tr>"+
                     "<tr>"+
                         "<th class='popup-cell-title popup-cell'>ALTITUD: </th>"+
-                        "<td class='popup-cell'>" + feature.properties.elevacion + " msnm</td>"+ 
+                        "<td class='popup-cell'>" + feature.properties.elevation + " msnm</td>"+ 
                     "</tr>"+
                 "</tbody>"+
             "</table>"+ 
@@ -210,17 +210,17 @@ function onEachFeature(feature, layer) {
             "<div data-bs-toggle='tooltip'>"+
                 "<div data-bs-toggle='modal' data-bs-target='#panel-modal'>" + 
                     "<button style='font-size:14px !important;' class='btn btn-primary popup-button' onclick='get_data_station(" + 
-                        '"' + feature.properties.codigo + '",' +
+                        '"' + feature.properties.code + '",' +
                         '"' + feature.properties.comid + '",' +
-                        '"' + feature.properties.nombre + '",' + 
-                        '"' + feature.properties.rio + '",' + 
-                        '"' + feature.properties.cuenca + '",' + 
+                        '"' + feature.properties.name + '",' + 
+                        '"' + feature.properties.river + '",' + 
+                        '"' + feature.properties.basin + '",' + 
                         '"' + round10(parseFloat(feature.geometry.coordinates[1]), -4) + '",' + 
                         '"' + round10(parseFloat(feature.geometry.coordinates[0]), -4) + '",' + 
-                        '"' + feature.properties.elevacion + '",' + 
-                        '"' + feature.properties.provincia + '",' + 
-                        '"' + feature.properties.canton + '",' + 
-                        '"' + feature.properties.parroquia + '",' + 
+                        '"' + feature.properties.elevation + '",' + 
+                        '"' + feature.properties.loc1 + '",' + 
+                        '"' + feature.properties.loc2 + '",' + 
+                        '"' + feature.properties.loc3 + '",' + 
                     ");' >"+
                         "<i class='fa fa-download'></i>&nbsp;Visualizar Datos"+
                     "</button>"+
@@ -250,43 +250,43 @@ window.onload = function () {
         est_layer = layer.features.map(item => item.properties);
         
         // Filter by alert
-        est_R000 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R0"), {
+        est_R000 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R0"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R000.addTo(map);
 
-        est_R002 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R2"), {
+        est_R002 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R2"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R002.addTo(map);
 
-        est_R005 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R5"), {
+        est_R005 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R5"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R005.addTo(map);
 
-        est_R010 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R10"), {
+        est_R010 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R10"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R010.addTo(map);
 
-        est_R025 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R25"), {
+        est_R025 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R25"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R025.addTo(map);
 
-        est_R050 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R50"), {
+        est_R050 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R50"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });
         est_R050.addTo(map);
 
-        est_R100 = L.geoJSON(layer.features.filter(item => item.properties.alerta === "R100"), {
+        est_R100 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R100"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
         });

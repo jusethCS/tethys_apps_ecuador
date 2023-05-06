@@ -233,9 +233,9 @@ n = len(stations)
 
 # For loop
 for i in range(n):
-    print(stations.codigo[i])
+    print(stations.code[i])
     # State variables
-    station_code = stations.codigo[i].lower()
+    station_code = stations.code[i].lower()
     station_comid = stations.comid[i]
     # Query to database
     observed_data = get_format_data("select datetime, {0} from observed_data order by datetime;".format(station_code), conn)
@@ -250,7 +250,7 @@ for i in range(n):
     # Forecast stats
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     # Warning if excced a given return period in 10% of emsemble
-    stations.loc[i, ['alerta']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
+    stations.loc[i, ['alert']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
 
 
 # Insert to database

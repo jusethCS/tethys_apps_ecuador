@@ -194,26 +194,26 @@ fetch("get-stations")
         $('#select-station').selectize({
             maxItems: 1,
             options: est_layer,
-            valueField: 'codigo',
+            valueField: 'code',
             labelField:  'concat',
-            searchField: ['codigo', 'nombre'],
+            searchField: ['codigo', 'name'],
             create: false,
             onChange: function(value, isOnInitialize) {
                 // Station item selected
-                est_item = est_layer.filter(item => item.codigo == value)[0];
+                est_item = est_layer.filter(item => item.code == value)[0];
                 // Remove marker if exists
                 if (typeof ss_marker !== 'undefined') {
                     map.removeLayer(ss_marker)
                 }
                 // Add marker to selected station
-                ss_marker = L.circleMarker([est_item.latitud, est_item.longitud], {
+                ss_marker = L.circleMarker([est_item.latitude, est_item.longitude], {
                     radius : 7,
                     color  : '#AD2745',
                     opacity: 0.75,
                   }).addTo(map);
                 // Bounds
-                southWest = L.latLng(est_item.latitud - 0.01, est_item.longitud - 0.01);
-                northEast = L.latLng(est_item.latitud + 0.01, est_item.longitud + 0.01);
+                southWest = L.latLng(est_item.latitude - 0.01, est_item.longitude - 0.01);
+                northEast = L.latLng(est_item.latitude + 0.01, est_item.longitude + 0.01);
                 bounds = L.latLngBounds(southWest, northEast);
                 // Fit the map
                 map.fitBounds(bounds);
@@ -224,13 +224,13 @@ fetch("get-stations")
         $('#select-river').selectize({
             maxItems: 1,
             options: est_layer,
-            valueField:  'rio',
-            labelField:  'rio',
-            searchField: 'rio',
+            valueField:  'river',
+            labelField:  'river',
+            searchField: 'river',
             create: false,
             onChange: function(value, isOnInitialize) {
                 // Station item selected
-                river_item = est_layer.filter(item => item.rio == value);
+                river_item = est_layer.filter(item => item.river == value);
                 // Remove marker if exists
                 if (typeof ss_marker !== 'undefined') {
                     map.removeLayer(ss_marker)
@@ -240,7 +240,7 @@ fetch("get-stations")
                 // Add marker to visualize the selected stations
                 river_item.map(item => {
                     //L.marker([item.latitud, item.longitud]).addTo(ss_river)
-                    L.circleMarker([item.latitud, item.longitud], {
+                    L.circleMarker([item.latitude, item.longitude], {
                         radius : 7,
                         color  : '#AD2745',
                         opacity: 0.75,
@@ -249,8 +249,8 @@ fetch("get-stations")
                 ss_marker.addTo(map);
                 
                 // Coordinates of selected stations
-                lon_item = river_item.map(item => item.longitud);
-                lat_item = river_item.map(item => item.latitud);
+                lon_item = river_item.map(item => item.longitude);
+                lat_item = river_item.map(item => item.latitude);
                 // Bounds
                 southWest = L.latLng(Math.min(...lat_item), Math.min(...lon_item));
                 northEast = L.latLng(Math.max(...lat_item), Math.max(...lon_item));
