@@ -27,3 +27,6 @@ body {
     font-weight: 600;
 }
 
+.icon-wrapper {
+    margin-left: 15px !important;
+}
