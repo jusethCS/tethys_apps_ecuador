@@ -189,7 +189,7 @@ def get_acumulated_volume_plot(sim, comid):
     simulated_volume = go.Scatter(x = sim.index, y = sim_volume, name='Simulated', )
     # Plot layouts
     layout = go.Layout(
-                title='Simulated Volume <br>{0}'.format(comid),
+                title='Simulated Cumulative Volume <br>{0}'.format(comid),
                 xaxis=dict(title='Dates', ), 
                 yaxis=dict(title='Volume (Mm<sup>3</sup>)', autorange=True),
                 showlegend=False)
@@ -374,5 +374,5 @@ def get_raw_forecast_date(request):
         "forecast_plot": PlotlyView(forecast_plot.update_layout(width = plot_width)),
         "forecast_table": forecast_table,
     }
-    return render(request, 'hydroviewer_ecuador/forecast_panel.html', context) 
+    return render(request, 'hydroviewer_ecuador/forecast_panel.html', context)
 

@@ -77,10 +77,6 @@ info.onAdd = function (map) {
                                 <label class="label-control" for="select-loc">Niveles de alerta:</label>
                                 <div class="alert-panel-checkbox">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="check-000yr" checked>
-                                        <label class="form-check-label" for="check-000yr">Sin Alerta</label>
-                                    </div>
-                                    <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="check-002yr" checked>
                                         <label class="form-check-label" for="check-002yr">Periodo de retorno: 2 años</label>
                                     </div>

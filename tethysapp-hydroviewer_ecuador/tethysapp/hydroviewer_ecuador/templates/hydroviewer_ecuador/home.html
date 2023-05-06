@@ -37,23 +37,47 @@
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
-  <!-- Example Modal -->
+  <!-- Example Modal --> 
   <div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="help-modal-label">Example Modal</h5>
+          <h5 class="modal-title" id="help-modal-label">Historical Validation Tool</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>You can add custom buttons to the app header using the <code>header_buttons</code> block. Use anchor/link tags for the button and wrap it in a div with the class <code>header-button</code>. For buttons with the gliphyicons, add the <code>glyphicon-button</code> class as well.</p>
-          <p>Ever have trouble using a modal in a Tethys app? Use the <code>after_app_content</code> block for modal content to allow them to function properly. See: <a href="https://getbootstrap.com/docs/5.1/components/modal/">Bootstrap Modals</a></p>
-          <p>Add tooltips to any element by adding the <code>data-bs-toggle</code>, <code>data-bs-placement</code>, and <code>title</code> attributes to the button. See: <a href="https://getbootstrap.com/docs/5.1/components/tooltips/">Bootstrap Tooltips</a></p>
+
+          <p> La app <strong>Historical Validation Tool personalizada para Ecuador</strong> es una aplicación para la evaluación y correción de sesgo de la simulación histórica para la herramienta de predicción de caudales GEOGloWS ECMWF en Ecuador.</p>
+          <p> Esta aplicación nos permite usar la funcionalidad de hydrostats para evaluar la precisión de la simulación histórica y la simulación histórica con corrección de sesgo en la Herramienta de predicción de caudal GEOGloWS ECMWF en comparación con el caudal observado en las estaciones de medición en Ecuador.</p>
+          <p> Esta corrección de sesgo se extiende a corto plazo a la herramienta de predicción de caudal GEOGloWS ECMWF para pronóstico. Los usuarios pueden hacer clic en cualquier estación del mapa para obtener datos observados y simulados.</p>
+
+          <p style="color:#e61e29;"> <strong>AVISO LEGAL: </strong></p>
+             <p style="color:#e61e29;">El usuario debe considerar que estas simulaciones y pronósticos son una referencia
+              que utiliza la herramienta de predicción del GEOGloWS ECMWF y datos observados de las estaciones hidrológicas
+              del INAMHI para estimar el rango más probable de niveles y caudales por encima o debajo del promedio
+              histórico simulado.</p>
+           </p>
+
+           <ol style="color:#e61e29;">
+             <li> El usuario debe tener en cuenta la probabilidad de que una predicción no sea siempre  correcta.</li>
+             <li>El usuario de esta herramienta acepta de antemano la forma y uso de la información.</li>
+           </ol style="color:#e61e29;">
+
+          <h5>Recursos adicionales:</h5>
+          <p><a href=" user_manual " target="_blank">Manual de Usuarios</a></p>
+          <p><a href=" technical_manual " target="_blank">Manual Técnico</a></p>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+          <div class="FootNote">
+            <p style ><sup>
+                Fuente: la red de ríos ha sido obtenida con el modelado del GEOGloWS ECMWF;
+                Unidad Hidrográfica 3: MAATE, 2020; Demarcaciones hidrográficas: MAATE, 2014;
+                Estaciones hidrológicas: INAMHI, 2022</sup>  
+            </p>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
