@@ -279,7 +279,7 @@ def home(request):
     return render(request, 'hydroviewer_ecuador/home.html')
 
 
-# Return streamflow station (in geojson format) 
+# Return data and plots for the selected comid
 @controller(name='get_data',url='hydroviewer-ecuador/get-data')
 def get_data(request):
     # Retrieving GET arguments
@@ -376,3 +376,21 @@ def get_raw_forecast_date(request):
     }
     return render(request, 'hydroviewer_ecuador/forecast_panel.html', context)
 
+
+
+# Return alerts (in geojson format)
+@controller(name='get_alerts',url='hydroviewer-ecuador/get-alerts')
+def get_alerts(request):
+    # Establish connection to database
+    db = create_engine(tokencon)
+    conn = db.connect()
+    # Query to database
+    stations = pd.read_sql("select * from drainage_network where alert != 'R0'", conn);
+    conn.close()
+    stations = to_geojson(
+        df = stations,
+        lat = "latitude",
+        lon = "longitude",
+        properties = ["comid", "latitude", "longitude", "river", "loc0", "loc1", "loc2", "alert"]
+    )
+    return JsonResponse(stations)

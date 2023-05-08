@@ -34,6 +34,57 @@ L.control.zoom({
 }).addTo(map);
 
 
+// ------------------------------------------------------------------------------------------------------------ //
+//                                     COLOR MARKER ACCORDING TO THE ALERT                                      //
+// ------------------------------------------------------------------------------------------------------------ //
+
+// Function to construct Icon Marker
+function IconMarker(rp) {
+  const IconMarkerR = new L.Icon({
+    iconUrl: `${server}/static/hydroviewer_ecuador/images/icon_popup/${rp}.svg`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+  return IconMarkerR;
+}
+
+// Icon markers for each return period
+const IconR000 = IconMarker("0");       // RP: 0 years
+const IconR002 = IconMarker("2");      // RP: 2 years
+const IconR005 = IconMarker("5");        // RP: 5 years
+const IconR010 = IconMarker("10");      // RP: 10 years
+const IconR025 = IconMarker("25");         // RP: 25 years
+const IconR050 = IconMarker("50");      // RP: 50 years
+const IconR100 = IconMarker("100");       // RP: 100 years
+
+// Customized icon function
+function IconParse(feature, latlng) {
+    switch (feature.properties.alert) {
+        case "R0":
+            StationIcon = IconR000;
+            break;
+        case "R2":
+            StationIcon = IconR002;
+            break;
+        case "R5":
+            StationIcon = IconR005;
+            break;
+        case "R10":
+            StationIcon = IconR010;
+            break;
+        case "R25":
+            StationIcon = IconR025;
+            break;
+        case "R50":
+            StationIcon = IconR050;
+            break;
+        case "R100":
+            StationIcon = IconR100;
+            break;
+    }
+    return L.marker(latlng, { icon: StationIcon });
+}
+
 
 
 
@@ -95,6 +146,20 @@ async function get_data_station(comid, name, lat, lon, loc1, loc2){
 // ------------------------------------------------------------------------------------------------------------ //
 
 window.onload = function () {
+  
+  // Show data panel
+  function showPanel(e) {
+    var comid = e.layer.feature.properties.comid;
+    var name = e.layer.feature.properties.river;
+    var lat = e.layer.feature.properties.latitude;
+    var lon = e.layer.feature.properties.longitude;
+    var loc1 = e.layer.feature.properties.loc1;
+    var loc2 = e.layer.feature.properties.loc2;
+    $("#panel-modal").modal("show")
+    get_data_station(comid, name, lat, lon, loc1, loc2)
+  }
+
+
   // Load drainage network
   fetch(
     `${server}/static/hydroviewer_ecuador/geojson/ecuador_geoglows_drainage.geojson`
@@ -113,17 +178,56 @@ window.onload = function () {
       // Buffer to select rivers
       map.almostOver.addLayer(riv);
       // On click function
-      map.on('almost:click', function (e) {
-          var comid = e.layer.feature.properties.comid;
-          var name = e.layer.feature.properties.river.toUpperCase();
-          var lat = e.layer.feature.properties.latitude;
-          var lon = e.layer.feature.properties.longitude;
-          var loc1 = e.layer.feature.properties.loc1.toUpperCase();
-          var loc2 = e.layer.feature.properties.loc2.toUpperCase();
-          $("#panel-modal").modal("show")
-          get_data_station(comid, name, lat, lon, loc1, loc2)
-      });
+      map.on('almost:click', showPanel);
     });
+
+  // Retrieve the alets
+
+  
+// Load stations
+fetch("get-alerts")
+  .then((response) => (layer = response.json()))
+  .then((layer) => {
+    
+      est_R002 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R2"), {
+          pointToLayer: IconParse,
+      });
+      est_R002.addTo(map);
+      est_R002.on('click', showPanel)
+      
+      est_R005 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R5"), {
+          pointToLayer: IconParse,
+      });
+      est_R005.addTo(map);
+      est_R005.on('click', showPanel)
+
+      est_R010 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R10"), {
+          pointToLayer: IconParse,
+      });
+      est_R010.addTo(map);
+      est_R010.on('click', showPanel)
+
+      est_R025 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R25"), {
+          pointToLayer: IconParse,
+      });
+      est_R025.addTo(map);
+      est_R025.on('click', showPanel)
+
+      est_R050 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R50"), {
+          pointToLayer: IconParse,
+      });
+      est_R050.addTo(map);
+      est_R050.on('click', showPanel)
+
+      est_R100 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R100"), {
+          pointToLayer: IconParse,
+      });
+      est_R100.addTo(map);
+      est_R100.on('click', showPanel)
+
+  });
+
+
 }; 
  
  
