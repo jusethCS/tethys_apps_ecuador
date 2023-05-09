@@ -196,7 +196,7 @@ fetch("get-stations")
             options: est_layer,
             valueField: 'code',
             labelField:  'concat',
-            searchField: ['codigo', 'name'],
+            searchField: ['codigo', 'name', 'concat'],
             create: false,
             onChange: function(value, isOnInitialize) {
                 // Station item selected
