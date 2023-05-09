@@ -27,8 +27,12 @@ def get_data(comid):
     status = False
     while not status:
       try:
-        outdf = pd.read_csv(url, index_col=0)
-        status = True
+        outdf = pd.read_csv(url, index_col=0) 
+        if(outdf.shape[0]>0):
+           print(outdf.shape)
+           status = True
+        else:
+           raise ValueError("Dataframe has not data.")
       except:
         print("Trying to retrieve data...")
     # Filter and correct data
@@ -36,6 +40,7 @@ def get_data(comid):
     outdf.index = pd.to_datetime(outdf.index)
     outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
     outdf.index = pd.to_datetime(outdf.index)
+    print("Returning data...")
     return(outdf)
 
 
@@ -45,15 +50,17 @@ def insert_data(db, comid):
     historical = get_data(comid)
     # Establish connection
     conn = db.connect()
-    # Insert to database
+    # Define the table and delete if exist
     table = 'r_{0}'.format(comid)
+    conn.execute("DROP TABLE IF EXISTS {0};".format(table))
+    # Insert to database
     try:
         historical.to_sql(table, con=conn, if_exists='replace', index=True)
+        print("Successfully inserted data...")
     except:
        print("Error to insert data in comid={0}".format(comid))
     # Close conection
     conn.close()   
-
 
 
 # Read comids

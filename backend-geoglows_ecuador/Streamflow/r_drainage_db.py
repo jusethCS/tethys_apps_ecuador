@@ -24,16 +24,12 @@ token = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PA
 db = create_engine(token)
 conn = db.connect()
 
-# Read streamflow stations and insert to database
-data = pd.read_excel('Ecuador_Stations_Streamflow.xlsx', index_col=0) 
+# Read the dataframe stations
+data = pd.read_excel('Ecuador_Geoglows_Drainage.xlsx', index_col=0) 
 df = pd.DataFrame(data)
-df.to_sql('streamflow_station', con=conn, if_exists='replace', index=False)
 
-# Read water level stations and insert to database
-data = pd.read_excel('Ecuador_Stations_WaterLevel.xlsx', index_col=0) 
-df = pd.DataFrame(data)
-df.to_sql('waterlevel_station', con=conn, if_exists='replace', index=False)
-
+# Insert to database
+df.to_sql('drainage_network', con=conn, if_exists='replace', index=False)
 
 # Close connection
 conn.close()
