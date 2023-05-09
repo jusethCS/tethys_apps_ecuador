@@ -45,6 +45,21 @@ def get_format_data(sql_statement, conn):
     # Return result
     return(data)
 
+def get_format_data_level(sql_statement, conn):
+    # Retrieve data from database
+    data =  pd.read_sql(sql_statement, conn)
+    # Datetime column as dataframe index
+    data.index = data.datetime
+    data = data.drop(columns=['datetime'])
+    # Format the index values
+    data[data < 0.1] = 0.1
+    data.index = pd.to_datetime(data.index)
+    data.index = data.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+    data.index = pd.to_datetime(data.index)
+    # Return result
+    return(data)
+
+
 ###############################################################################################################
 #                                         Function to bias correction                                         #
 ###############################################################################################################
@@ -217,7 +232,9 @@ def get_corrected_forecast(simulated_df, ensemble_df, observed_df):
 
 
 
-
+###############################################################################################################
+#                                                 Streamflow                                                  #
+###############################################################################################################
 
 # Setting the connetion to db
 db = create_engine(token)
@@ -255,6 +272,51 @@ for i in range(n):
 
 # Insert to database
 stations.to_sql('streamflow_station', con=conn, if_exists='replace', index=False)
+
+# Close connection
+conn.close()
+
+
+###############################################################################################################
+#                                                Water Level                                                  #
+###############################################################################################################
+
+# Setting the connetion to db
+db = create_engine(token)
+
+# Establish connection
+conn = db.connect()
+
+# Getting stations
+stations = pd.read_sql("select * from waterlevel_station;", conn)
+
+# Number of stations
+n = len(stations)
+
+# For loop
+for i in range(n):
+    print(stations.code[i])
+    # State variables
+    station_code = stations.code[i].lower()
+    station_comid = stations.comid[i]
+    # Query to database
+    observed_data = get_format_data_level("select datetime, {0} from waterlevel_data order by datetime;".format(station_code), conn)
+    simulated_data = get_format_data_level("select * from r_{0};".format(station_comid), conn)
+    ensemble_forecast = get_format_data_level("select * from f_{0};".format(station_comid), conn)
+    # Corect the historical simulation
+    corrected_data = get_bias_corrected_data(simulated_data, observed_data)
+    # Return period
+    return_periods = get_return_periods(station_comid, corrected_data)
+    # Corrected Forecast
+    ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    # Forecast stats
+    ensemble_stats = get_ensemble_stats(ensemble_forecast)
+    # Warning if excced a given return period in 10% of emsemble
+    stations.loc[i, ['alert']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
+
+
+# Insert to database
+stations.to_sql('waterlevel_station', con=conn, if_exists='replace', index=False)
 
 # Close connection
 conn.close()
