@@ -13,3 +13,4 @@ services.yml
 .env
 *.cer
 config-server.sh
+Ecuador_Data_*
