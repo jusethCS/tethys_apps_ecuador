@@ -128,7 +128,7 @@ async function get_data_station(code, comid, name, river, basin, latitude, longi
     // Retrieve the data
     $.ajax({
         type: 'GET', 
-        url: "get-historical-data",
+        url: "get-data",
         data: {
             codigo: code.toLowerCase(),
             comid: comid,
@@ -136,29 +136,13 @@ async function get_data_station(code, comid, name, river, basin, latitude, longi
             width: `${$("#panel-tab-content").width()}`
         }
     }).done(function(response){
-        
-        $("#modal-body-panel-custom").html(response)
-        
-        $.ajax({
-            type: 'GET', 
-            url: "get-metrics",
-        }).done(function(response){
-            $("#metrics-table-panel").html(response)
-        })
+        // Render the panel data
+        $("#modal-body-panel-custom").html(response);
 
-        $.ajax({
-            type: 'GET', 
-            url: "get-forecast-table",
-        }).done(function(response){
-            $("#forecast-table").html(response)
-        })
-        
-        $.ajax({
-            type: 'GET', 
-            url: "get-corrected-forecast-table",
-        }).done(function(response){
-            $("#corrected-forecast-table").html(response)
-        })
+        // Set active variables for panel data
+        active_code = code.toLowerCase();
+        active_comid = comid;
+        active_name = name.toUpperCase();
     })
 }
 
@@ -243,7 +227,7 @@ window.onload = function () {
       map.fitBounds(riv.getBounds());
     });
 
-  // Load stations
+  // Load stations 
   fetch("get-stations")
     .then((response) => (layer = response.json()))
     .then((layer) => {

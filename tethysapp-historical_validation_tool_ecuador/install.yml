@@ -10,19 +10,10 @@ requirements:
   skip: false
   conda:
     channels:
-      - conda-forge
-      - anaconda
     packages:
-      - psycopg2
-      - pandas
-      - sqlalchemy
-      - openpyxl
-      - geoglows
-      - lxml
-      - python-dotenv
-  pip:
-    - pandas_geojson
 
+  pip:
+  
   npm:
 
 post:

@@ -142,7 +142,9 @@
                     });
 				</script>
             </div>
-            <div id="metrics-table-panel"></div>
+            <div id="metrics-table-panel">
+                {{ metrics_table|safe }}
+            </div>
         </div>
         <div class="tab-pane fade" id="forecast" role="tabpanel" aria-labelledby="forecast-tab">
             {% block forecast_raw %}
@@ -152,10 +154,14 @@
                     <input type="text" class="form-control" id="datepicker_raw">
                     <button class="btn btn-primary btn-sm" type="button" id="button_datepicker_raw">Actualizar</button>
                 </div>
-                <div class="container-fluid" id="ensemble_forecast_plot">
-                    {% gizmo ensemble_forecast_plot %}
+                <div id="container-forecast-data">
+                    <div class="container-fluid" id="ensemble_forecast_plot">
+                        {% gizmo ensemble_forecast_plot %}
+                    </div>
+                    <div class="container-fluid" id="forecast-table">
+                        {{ forecast_table|safe }}
+                    </div>
                 </div>
-                <div class="container-fluid" id="forecast-table"></div>
                 <br>
             {% endblock %}
         </div>
@@ -167,10 +173,14 @@
                 <input type="text" class="form-control" id="datepicker_cor">
                 <button class="btn btn-primary btn-sm" type="button" id="button_datepicker_cor">Actualizar</button>
             </div>
-            <div class="container-fluid" id="corrected_ensemble_forecast_plot">
-                {% gizmo corrected_ensemble_forecast_plot %}
+            <div id="container-corrected-forecast-data">
+                <div class="container-fluid" id="corrected_ensemble_forecast_plot">
+                    {% gizmo corrected_ensemble_forecast_plot %}
+                </div>
+                <div class="container-fluid" id="corrected-forecast-table">
+                    {{ corrected_forecast_table|safe }}
+                </div>
             </div>
-            <div class="container-fluid" id="corrected-forecast-table"></div>
             <br>
         </div>
     </div>
@@ -214,29 +224,18 @@
             $.ajax({
                 type: 'GET', 
                 url: "get-raw-forecast-date",
-                data: { fecha: forecast_date }
+                data: { 
+                    fecha: forecast_date, 
+                    codigo: active_code,
+                    comid: active_comid,
+                    nombre: active_name,
+                    width: `${$("#panel-tab-content").width()}`
+                }
             }).done(function(response){
-                $("#ensemble_forecast_plot").html(response);  
-                $.ajax({
-                    type: 'GET', 
-                    url: "get-forecast-table-s",
-                }).done(function(response){
-                    $("#forecast-table").html(response)
-                })
-                // Retrieve the corrected forecast
-                $.ajax({
-                    type: 'GET', 
-                    url: "get-corrected-forecast-date",
-                    data: { fecha: forecast_date }
-                }).done(function(response){
-                    $("#corrected_ensemble_forecast_plot").html(response);  
-                    $.ajax({
-                        type: 'GET', 
-                        url: "get-corrected-forecast-table-s",
-                    }).done(function(response){
-                        $("#corrected-forecast-table").html(response)
-                    })
-                })
+                $("#ensemble_forecast_plot").html(response.ensemble_forecast_plot);  
+                $("#corrected_ensemble_forecast_plot").html(response.corr_ensemble_forecast_plot);
+                $("#forecast-table").html(response.forecast_table);
+                $("#corrected-forecast-table").html(response.corr_forecast_table);
             })    
         })
 
@@ -251,29 +250,18 @@
             $.ajax({
                 type: 'GET', 
                 url: "get-raw-forecast-date",
-                data: { fecha: forecast_date }
+                data: { 
+                    fecha: forecast_date, 
+                    codigo: active_code,
+                    comid: active_comid,
+                    nombre: active_name,
+                    width: `${$("#panel-tab-content").width()}`
+                }
             }).done(function(response){
-                $("#ensemble_forecast_plot").html(response);  
-                $.ajax({
-                    type: 'GET', 
-                    url: "get-forecast-table-s",
-                }).done(function(response){
-                    $("#forecast-table").html(response)
-                })
-                // Retrieve the corrected forecast
-                $.ajax({
-                    type: 'GET', 
-                    url: "get-corrected-forecast-date",
-                    data: { fecha: forecast_date }
-                }).done(function(response){
-                    $("#corrected_ensemble_forecast_plot").html(response);  
-                    $.ajax({
-                        type: 'GET', 
-                        url: "get-corrected-forecast-table-s",
-                    }).done(function(response){
-                        $("#corrected-forecast-table").html(response)
-                    })
-                })
+                $("#ensemble_forecast_plot").html(response.ensemble_forecast_plot);  
+                $("#corrected_ensemble_forecast_plot").html(response.corr_ensemble_forecast_plot);
+                $("#forecast-table").html(response.forecast_table);
+                $("#corrected-forecast-table").html(response.corr_forecast_table);
             })    
         })
     </script>
