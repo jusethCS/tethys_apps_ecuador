@@ -34,7 +34,7 @@ from dotenv import load_dotenv
 ##                                       STATUS VARIABLES                                         ##
 ####################################################################################################
 
-# Import enviromental variables
+# Import enviromental variables 
 load_dotenv()
 DB_USER = os.getenv('DB_USER')
 DB_PASS = os.getenv('DB_PASS')
@@ -253,7 +253,7 @@ def get_daily_average_plot(merged_sim, merged_cor, code, name):
     layout = go.Layout(
         title='Daily Average Water Level <br> {0} - {1}'.format(code.upper(), name),
         xaxis=dict(title='Days', ), 
-        yaxis=dict(title='Discharge (m<sup>3</sup>/s)', autorange=True),
+        yaxis=dict(title='Water Level (m)', autorange=True),
         showlegend=True)
     # Generate the output
     chart_obj = go.Figure(data=[daily_avg_obs_Q, daily_avg_corr_sim_Q], layout=layout)
@@ -273,7 +273,7 @@ def get_monthly_average_plot(merged_sim, merged_cor, code, name):
     layout = go.Layout(
         title='Monthly Average Water Level <br> {0} - {1}'.format(code.upper(), name),
         xaxis=dict(title='Months', ), 
-        yaxis=dict(title='Discharge (m<sup>3</sup>/s)', autorange=True),
+        yaxis=dict(title='Water Level (m)', autorange=True),
         showlegend=True)
     # Generate the output
     chart_obj = go.Figure(data=[daily_avg_obs_Q, daily_avg_corr_sim_Q], layout=layout)
@@ -369,7 +369,7 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
       x_vals = (corrected_records_plot.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_records_plot.index[0])
       max_visible = max(max(corrected_records_plot.max()), max_visible)
     ## Getting Return Periods
-    r2 = int(corrected_rperiods_df.iloc[0]['return_period_2'])
+    r2 = round(corrected_rperiods_df.iloc[0]['return_period_2'], 2)
     ## Colors
     colors = {
         '2 Year': 'rgba(254, 240, 1, .4)',
@@ -398,11 +398,11 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
           visible=visible,
           line=dict(color=color, width=0))
     ##
-    r5 = int(corrected_rperiods_df.iloc[0]['return_period_5'])
-    r10 = int(corrected_rperiods_df.iloc[0]['return_period_10'])
-    r25 = int(corrected_rperiods_df.iloc[0]['return_period_25'])
-    r50 = int(corrected_rperiods_df.iloc[0]['return_period_50'])
-    r100 = int(corrected_rperiods_df.iloc[0]['return_period_100'])
+    r5 = round(corrected_rperiods_df.iloc[0]['return_period_5'], 2)
+    r10 = round(corrected_rperiods_df.iloc[0]['return_period_10'], 2)
+    r25 = round(corrected_rperiods_df.iloc[0]['return_period_25'], 2)
+    r50 = round(corrected_rperiods_df.iloc[0]['return_period_50'], 2)
+    r100 = round(corrected_rperiods_df.iloc[0]['return_period_100'], 2)
     ##
     hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
     hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
