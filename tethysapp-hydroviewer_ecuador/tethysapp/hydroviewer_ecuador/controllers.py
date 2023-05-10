@@ -25,14 +25,25 @@ import HydroErr as he
 import plotly.graph_objs as go
 import datetime as dt
 
+# Base
+import os
+from dotenv import load_dotenv
+
+
 
 ####################################################################################################
 ##                                       STATUS VARIABLES                                         ##
 ####################################################################################################
 
-# Postgresql connection
+# Import enviromental variables 
+load_dotenv()
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_NAME = os.getenv('DB_NAME')
+
+# Generate the conection token
 global tokencon
-tokencon = "postgresql+psycopg2://postgres:pass@localhost:5432/gess_streamflow"
+tokencon = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
 
 
 
@@ -222,7 +233,7 @@ def get_forecast_plot(comid, stats, rperiods, records):
       x_vals = (corrected_records_plot.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_records_plot.index[0])
       max_visible = max(max(corrected_records_plot.max()), max_visible)
     ## Getting Return Periods
-    r2 = int(corrected_rperiods_df.iloc[0]['return_period_2'])
+    r2 = round(corrected_rperiods_df.iloc[0]['return_period_2'], 1)
     ## Colors
     colors = {
         '2 Year': 'rgba(254, 240, 1, .4)',
@@ -251,11 +262,11 @@ def get_forecast_plot(comid, stats, rperiods, records):
           visible=visible,
           line=dict(color=color, width=0))
     ##
-    r5 = int(corrected_rperiods_df.iloc[0]['return_period_5'])
-    r10 = int(corrected_rperiods_df.iloc[0]['return_period_10'])
-    r25 = int(corrected_rperiods_df.iloc[0]['return_period_25'])
-    r50 = int(corrected_rperiods_df.iloc[0]['return_period_50'])
-    r100 = int(corrected_rperiods_df.iloc[0]['return_period_100'])
+    r5 = round(corrected_rperiods_df.iloc[0]['return_period_5'], 1)
+    r10 = round(corrected_rperiods_df.iloc[0]['return_period_10'], 1)
+    r25 = round(corrected_rperiods_df.iloc[0]['return_period_25'], 1)
+    r50 = round(corrected_rperiods_df.iloc[0]['return_period_50'], 1)
+    r100 = round(corrected_rperiods_df.iloc[0]['return_period_100'], 1)
     ##
     hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
     hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
