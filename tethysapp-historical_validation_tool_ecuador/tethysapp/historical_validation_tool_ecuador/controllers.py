@@ -25,15 +25,25 @@ import HydroErr as he
 import plotly.graph_objs as go
 import datetime as dt
 
+# Base
+import os
+from dotenv import load_dotenv
 
 
 ####################################################################################################
 ##                                       STATUS VARIABLES                                         ##
 ####################################################################################################
 
-# Postgresql connection
+# Import enviromental variables 
+load_dotenv()
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_NAME = os.getenv('DB_NAME')
+
+# Generate the conection token
 global tokencon
-tokencon = "postgresql+psycopg2://postgres:pass@localhost:5432/gess_streamflow"
+tokencon = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
+
 
 
 ####################################################################################################
@@ -431,7 +441,7 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
 
 ####################################################################################################
 ##                                   CONTROLLERS AND REST APIs                                    ##
-####################################################################################################
+#################################################################################################### 
 
 # Initialize the web app
 @controller(name='home',url='historical-validation-tool-ecuador')
@@ -447,7 +457,7 @@ def get_stations(request):
     db= create_engine(tokencon)
     conn = db.connect()
     # Query to database
-    stations = pd.read_sql("select *, concat(code, ' - ', left(name, 23)) from stations", conn);
+    stations = pd.read_sql("select *, concat(code, ' - ', left(name, 23)) from streamflow_station", conn);
     conn.close()
     stations = to_geojson(
         df = stations,
@@ -475,7 +485,7 @@ def get_data(request):
     conn = db.connect()
 
     # Data series
-    observed_data = get_format_data("select datetime, {0} from observed_data order by datetime;".format(station_code), conn)
+    observed_data = get_format_data("select datetime, {0} from streamflow_data order by datetime;".format(station_code), conn)
     simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
     corrected_data = get_bias_corrected_data(simulated_data, observed_data)
 
@@ -629,7 +639,7 @@ def get_raw_forecast_date(request):
     conn = db.connect()
 
     # Data series
-    observed_data = get_format_data("select datetime, {0} from observed_data order by datetime;".format(station_code), conn)
+    observed_data = get_format_data("select datetime, {0} from streamflow_data order by datetime;".format(station_code), conn)
     simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
     corrected_data = get_bias_corrected_data(simulated_data, observed_data)
     
