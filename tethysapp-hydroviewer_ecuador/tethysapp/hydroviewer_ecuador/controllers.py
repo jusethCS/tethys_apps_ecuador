@@ -394,3 +394,21 @@ def get_alerts(request):
         properties = ["comid", "latitude", "longitude", "river", "loc0", "loc1", "loc2", "alert"]
     )
     return JsonResponse(stations)
+
+
+# Return alerts (in geojson format)
+@controller(name='get_rivers',url='hydroviewer-ecuador/get-rivers')
+def get_rivers(request):
+    # Establish connection to database
+    db = create_engine(tokencon)
+    conn = db.connect()
+    # Query to database
+    stations = pd.read_sql("select * from drainage_network", conn);
+    conn.close()
+    stations = to_geojson(
+        df = stations,
+        lat = "latitude",
+        lon = "longitude",
+        properties = ["comid", "latitude", "longitude", "river", "loc0", "loc1", "loc2", "alert"]
+    )
+    return JsonResponse(stations)

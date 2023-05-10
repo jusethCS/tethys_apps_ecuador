@@ -200,7 +200,7 @@ $("#shpFile").on("change",  function(){
 
 
 //  Select box for ZOOM to stations and rivers
-fetch("get-alerts")
+fetch("get-rivers")
     .then((response) => (layer = response.json()))
     .then((layer) => {
         // Format json as input of selectize
