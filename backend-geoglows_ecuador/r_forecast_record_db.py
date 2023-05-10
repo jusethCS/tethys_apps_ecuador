@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 user = os.getlogin()
 user_dir = os.path.expanduser('~{}'.format(user))
 os.chdir(user_dir)
-os.chdir("tethys_apps_ecuador/backend-geoglows_ecuador/Streamflow")
+os.chdir("tethys_apps_ecuador/backend-geoglows_ecuador")
 
 # Import enviromental variables
 load_dotenv()
@@ -21,18 +21,15 @@ DB_NAME = os.getenv('DB_NAME')
 token = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
 
 
+
 # Function to retrieve data from GESS API
 def get_data(comid):
-    url = 'https://geoglows.ecmwf.int/api/HistoricSimulation/?reach_id={0}&return_format=csv'.format(comid)
+    url = 'https://geoglows.ecmwf.int/api/ForecastRecords/?reach_id={0}&return_format=csv'.format(comid)
     status = False
     while not status:
       try:
-        outdf = pd.read_csv(url, index_col=0) 
-        if(outdf.shape[0]>0):
-           print(outdf.shape)
-           status = True
-        else:
-           raise ValueError("Dataframe has not data.")
+        outdf = pd.read_csv(url, index_col=0)
+        status = True
       except:
         print("Trying to retrieve data...")
     # Filter and correct data
@@ -40,7 +37,6 @@ def get_data(comid):
     outdf.index = pd.to_datetime(outdf.index)
     outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
     outdf.index = pd.to_datetime(outdf.index)
-    print("Returning data...")
     return(outdf)
 
 
@@ -50,17 +46,15 @@ def insert_data(db, comid):
     historical = get_data(comid)
     # Establish connection
     conn = db.connect()
-    # Define the table and delete if exist
-    table = 'r_{0}'.format(comid)
-    conn.execute("DROP TABLE IF EXISTS {0};".format(table))
     # Insert to database
+    table = 'fr_{0}'.format(comid)
     try:
         historical.to_sql(table, con=conn, if_exists='replace', index=True)
-        print("Successfully inserted data...")
     except:
        print("Error to insert data in comid={0}".format(comid))
     # Close conection
     conn.close()   
+
 
 
 # Read comids
@@ -82,9 +76,6 @@ for i in range(1,n):
         insert_data(db, comid)
     except:
         insert_data(db, comid)
-
-
-
 
 
 

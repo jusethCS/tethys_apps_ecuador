@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 user = os.getlogin()
 user_dir = os.path.expanduser('~{}'.format(user))
 os.chdir(user_dir)
-os.chdir("tethys_apps_ecuador/backend-geoglows_ecuador/Streamflow")
+os.chdir("tethys_apps_ecuador/backend-geoglows_ecuador")
 
 # Import enviromental variables
 load_dotenv()
@@ -45,6 +45,30 @@ def get_format_data(sql_statement, conn):
     # Return result
     return(data)
 
+def get_format_data_level(sql_statement, conn):
+    # Retrieve data from database
+    data =  pd.read_sql(sql_statement, conn)
+    # Datetime column as dataframe index
+    data.index = data.datetime
+    data = data.drop(columns=['datetime'])
+    # Format the index values
+    data[data < 0.1] = 0.1
+    data.index = pd.to_datetime(data.index)
+    data.index = data.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+    data.index = pd.to_datetime(data.index)
+    # Return result
+    return(data)
+
+
+###############################################################################################################
+#                                         Function to bias correction                                         #
+###############################################################################################################
+def get_bias_corrected_data(sim, obs):
+    outdf = geoglows.bias.correct_historical(sim, obs)
+    outdf.index = pd.to_datetime(outdf.index)
+    outdf.index = outdf.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+    outdf.index = pd.to_datetime(outdf.index)
+    return(outdf)
 
 
 ###############################################################################################################
@@ -176,7 +200,41 @@ def get_excced_rp(stats: pd.DataFrame, ensem: pd.DataFrame, rperiods: pd.DataFra
     return(alarm)
 
 
+def get_corrected_forecast(simulated_df, ensemble_df, observed_df):
+    monthly_simulated = simulated_df[simulated_df.index.month == (ensemble_df.index[0]).month].dropna()
+    monthly_observed = observed_df[observed_df.index.month == (ensemble_df.index[0]).month].dropna()
+    min_simulated = np.min(monthly_simulated.iloc[:, 0].to_list())
+    max_simulated = np.max(monthly_simulated.iloc[:, 0].to_list())
+    min_factor_df = ensemble_df.copy()
+    max_factor_df = ensemble_df.copy()
+    forecast_ens_df = ensemble_df.copy()
+    for column in ensemble_df.columns:
+      tmp = ensemble_df[column].dropna().to_frame()
+      min_factor = tmp.copy()
+      max_factor = tmp.copy()
+      min_factor.loc[min_factor[column] >= min_simulated, column] = 1
+      min_index_value = min_factor[min_factor[column] != 1].index.tolist()
+      for element in min_index_value:
+        min_factor[column].loc[min_factor.index == element] = tmp[column].loc[tmp.index == element] / min_simulated
+      max_factor.loc[max_factor[column] <= max_simulated, column] = 1
+      max_index_value = max_factor[max_factor[column] != 1].index.tolist()
+      for element in max_index_value:
+        max_factor[column].loc[max_factor.index == element] = tmp[column].loc[tmp.index == element] / max_simulated
+      tmp.loc[tmp[column] <= min_simulated, column] = min_simulated
+      tmp.loc[tmp[column] >= max_simulated, column] = max_simulated
+      forecast_ens_df.update(pd.DataFrame(tmp[column].values, index=tmp.index, columns=[column]))
+      min_factor_df.update(pd.DataFrame(min_factor[column].values, index=min_factor.index, columns=[column]))
+      max_factor_df.update(pd.DataFrame(max_factor[column].values, index=max_factor.index, columns=[column]))
+    corrected_ensembles = geoglows.bias.correct_forecast(forecast_ens_df, simulated_df, observed_df)
+    corrected_ensembles = corrected_ensembles.multiply(min_factor_df, axis=0)
+    corrected_ensembles = corrected_ensembles.multiply(max_factor_df, axis=0)
+    return(corrected_ensembles)
 
+
+
+###############################################################################################################
+#                                                 Streamflow                                                  #
+###############################################################################################################
 
 # Setting the connetion to db
 db = create_engine(token)
@@ -185,38 +243,82 @@ db = create_engine(token)
 conn = db.connect()
 
 # Getting stations
-drainage = pd.read_sql("select * from drainage_network;", conn)
+stations = pd.read_sql("select * from streamflow_station;", conn)
 
 # Number of stations
-n = len(drainage)
+n = len(stations)
 
 # For loop
 for i in range(n):
+    print(stations.code[i])
     # State variables
-    station_comid = drainage.comid[i]
-    # Progress
-    prog = round(100 * i/n, 3)
-    print("Progress: {0} %. Comid: {1}".format(prog, station_comid))
+    station_code = stations.code[i].lower()
+    station_comid = stations.comid[i]
     # Query to database
+    observed_data = get_format_data("select datetime, {0} from streamflow_data order by datetime;".format(station_code), conn)
     simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
     ensemble_forecast = get_format_data("select * from f_{0};".format(station_comid), conn)
+    # Corect the historical simulation
+    corrected_data = get_bias_corrected_data(simulated_data, observed_data)
     # Return period
-    return_periods = get_return_periods(station_comid, simulated_data)
+    return_periods = get_return_periods(station_comid, corrected_data)
+    # Corrected Forecast
+    ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
     # Forecast stats
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     # Warning if excced a given return period in 10% of emsemble
-    drainage.loc[i, ['alert']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
-    
+    stations.loc[i, ['alert']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
 
 
 # Insert to database
-drainage.to_sql('drainage_network', con=conn, if_exists='replace', index=False)
+stations.to_sql('streamflow_station', con=conn, if_exists='replace', index=False)
 
 # Close connection
 conn.close()
 
 
+###############################################################################################################
+#                                                Water Level                                                  #
+###############################################################################################################
+
+# Setting the connetion to db
+db = create_engine(token)
+
+# Establish connection
+conn = db.connect()
+
+# Getting stations
+stations = pd.read_sql("select * from waterlevel_station;", conn)
+
+# Number of stations
+n = len(stations)
+
+# For loop
+for i in range(n):
+    print(stations.code[i])
+    # State variables
+    station_code = stations.code[i].lower()
+    station_comid = stations.comid[i]
+    # Query to database
+    observed_data = get_format_data_level("select datetime, {0} from waterlevel_data order by datetime;".format(station_code), conn)
+    simulated_data = get_format_data_level("select * from r_{0};".format(station_comid), conn)
+    ensemble_forecast = get_format_data_level("select * from f_{0};".format(station_comid), conn)
+    # Corect the historical simulation
+    corrected_data = get_bias_corrected_data(simulated_data, observed_data)
+    # Return period
+    return_periods = get_return_periods(station_comid, corrected_data)
+    # Corrected Forecast
+    ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    # Forecast stats
+    ensemble_stats = get_ensemble_stats(ensemble_forecast)
+    # Warning if excced a given return period in 10% of emsemble
+    stations.loc[i, ['alert']] = get_excced_rp(ensemble_stats, ensemble_forecast, return_periods)
 
 
+# Insert to database
+stations.to_sql('waterlevel_station', con=conn, if_exists='replace', index=False)
+
+# Close connection
+conn.close()
 
 
