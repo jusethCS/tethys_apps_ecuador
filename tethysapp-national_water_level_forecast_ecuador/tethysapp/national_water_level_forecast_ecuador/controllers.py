@@ -42,7 +42,6 @@ DB_NAME = os.getenv('DB_NAME')
 
 # Generate the conection token
 global tokencon
-#tokencon = "postgresql+psycopg2://postgres:pass@localhost:5432/gess_streamflow"
 tokencon = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
 
 
