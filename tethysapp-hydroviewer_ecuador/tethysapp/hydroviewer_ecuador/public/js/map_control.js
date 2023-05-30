@@ -124,6 +124,7 @@ info.onAdd = function (map) {
                                 <input class="form-control" type="file" id="shpFile" accept=".shp">
                                 <br>
                             </div>`;
+    L.DomEvent.disableClickPropagation(this._div);
     return this._div;
 };
 

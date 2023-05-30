@@ -132,6 +132,7 @@ info.onAdd = function (map) {
                                 <br>
                                 
                             </div>`;
+    L.DomEvent.disableClickPropagation(this._div);
     return this._div;
 };
 

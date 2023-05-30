@@ -132,10 +132,11 @@ info.onAdd = function (map) {
                                 <br>
                                 
                             </div>`;
+    L.DomEvent.disableClickPropagation(this._div);
     return this._div;
 };
 
-// Add the control panel container to the map
+// Add the control panel container to the map 
 info.addTo(map);
 
 
