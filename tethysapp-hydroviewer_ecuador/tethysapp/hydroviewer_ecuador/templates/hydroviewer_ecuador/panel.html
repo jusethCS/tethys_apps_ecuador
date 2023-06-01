@@ -46,6 +46,9 @@
         <div class="tab-pane fade show active" id="hydrograph" role="tabpanel" aria-labelledby="hydrograph-tab">
             <div class="container-fluid">
                 {% gizmo data_plot %}
+                <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-simulated-data-xlsx')">
+                    <i class="fa-solid fa-download"></i> Descargar Simulación histórica
+                </button>
             </div>
         </div>
         <div class="tab-pane fade" id="visual-analisis" role="tabpanel" aria-labelledby="visual-analisis-tab">
@@ -81,6 +84,10 @@
                     <div class="container-fluid" id="forecast-table">
                         {{ forecast_table|safe }}
                     </div>
+                    <br>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-forecast-xlsx')">
+                        <i class="fa-solid fa-download"></i> Descargar Pronóstico
+                    </button>
                 </div>
                 
                 <br>
@@ -124,6 +131,12 @@
                 $("#ensemble-forecast-container").html(response); 
             })
         })
+
+        function descargarArchivo(api_name){
+            forecast_date = $("#datepicker_cor").val()
+            url = `${server}/apps/hydroviewer-ecuador/${api_name}/?fecha=${forecast_date}&comid=${global_comid}`
+            window.location.href = url;
+        }
 
     </script>
 

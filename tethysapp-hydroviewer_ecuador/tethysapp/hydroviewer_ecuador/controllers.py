@@ -26,6 +26,7 @@ import plotly.graph_objs as go
 import datetime as dt
 
 # Base
+import io
 import os
 from dotenv import load_dotenv
 
@@ -40,6 +41,10 @@ load_dotenv()
 DB_USER = os.getenv('DB_USER')
 DB_PASS = os.getenv('DB_PASS')
 DB_NAME = os.getenv('DB_NAME')
+
+DB_USER="geoglows_ecuador"
+DB_PASS="geoglowsRDS2789"
+DB_NAME="geoglows_ecuador"
 
 # Generate the conection token
 global tokencon
@@ -423,3 +428,56 @@ def get_rivers(request):
         properties = ["comid", "latitude", "longitude", "river", "loc0", "loc1", "loc2", "alert"]
     )
     return JsonResponse(stations)
+
+
+
+
+# Retrieve xlsx data
+@controller(name='get_simulated_data_xlsx',url='hydroviewer-ecuador/get-simulated-data-xlsx')
+def get_simulated_data_xlsx(request):
+    # Retrieving GET arguments
+    station_comid = request.GET['comid'] #9027406
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    # Data series
+    simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
+    simulated_data = simulated_data.rename(columns={
+                                "streamflow_m^3/s": "Historical simulation (m3/s)"})
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    simulated_data.to_excel(writer, sheet_name='serie_historica_simulada', index=True)  # Aquí se incluye el índice
+    writer.save()
+    output.seek(0)
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=serie_historica_simulada.xlsx'
+    response.write(output.getvalue())
+    return response
+
+
+# Retrieve xlsx data
+@controller(name='get_forecast_xlsx',url='hydroviewer-ecuador/get-forecast-xlsx')
+def get_forecast_xlsx(request):
+    # Retrieving GET arguments
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    # Raw forecast
+    ensemble_forecast = get_forecast_date(station_comid, forecast_date)
+    ensemble_stats = get_ensemble_stats(ensemble_forecast)
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    ensemble_stats.to_excel(writer, sheet_name='ensemble_forecast', index=True)  # Aquí se incluye el índice
+    writer.save()
+    output.seek(0)
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=ensemble_forecast.xlsx'
+    response.write(output.getvalue())
+    return response
+
