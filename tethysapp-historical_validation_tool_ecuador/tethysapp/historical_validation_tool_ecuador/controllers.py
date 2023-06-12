@@ -646,7 +646,8 @@ def get_raw_forecast_date(request):
     
     # Raw forecast
     ensemble_forecast = get_forecast_date(station_comid, forecast_date)
-    forecast_records = get_forecast_record_date(station_comid, forecast_date)
+    forecast_records = get_format_data("select * from fr_{0};".format(station_comid), conn)
+    #forecast_records = get_forecast_record_date(station_comid, forecast_date)
     return_periods = get_return_periods(station_comid, simulated_data)
 
     # Corrected forecast
