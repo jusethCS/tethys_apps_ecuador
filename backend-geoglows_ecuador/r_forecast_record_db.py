@@ -1,5 +1,6 @@
 # Import libraries and dependencies
 import os
+import datetime as dt
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
@@ -18,13 +19,16 @@ DB_PASS = os.getenv('DB_PASS')
 DB_NAME = os.getenv('DB_NAME')
 
 # Generate the conection token
-token = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME)
+token = "postgresql+psycopg2://{0}:{1}@localhost:5432/{2}".format(DB_USER, DB_PASS, DB_NAME) 
 
 
 
 # Function to retrieve data from GESS API
 def get_data(comid):
-    url = 'https://geoglows.ecmwf.int/api/ForecastRecords/?reach_id={0}&return_format=csv'.format(comid)
+    date = dt.datetime.now().strftime('%Y%m%d')
+    idate = dt.datetime.strptime(date, '%Y%m%d') - dt.timedelta(days=80)
+    idate = idate.strftime('%Y%m%d')
+    url = 'https://geoglows.ecmwf.int/api/ForecastRecords/?reach_id={0}&start_date={1}&end_date={2}&return_format=csv'.format(comid, idate, date)
     status = False
     while not status:
       try:
@@ -71,7 +75,7 @@ for i in range(1,n):
     comid = data.comid[i]
     # Progress
     prog = round(100 * i/n, 3)
-    print("Progress: {0} %. Comid: {1}".format(prog, comid))
+    print("** Progress: {0} %. Comid: {1}".format(prog, comid))
     try:
         insert_data(db, comid)
     except:
