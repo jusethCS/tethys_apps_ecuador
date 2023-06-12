@@ -159,8 +159,69 @@ window.onload = function () {
     get_data_station(comid, name, lat, lon, loc1, loc2)
   }
 
+  // Alertas meteorologicas INAMHI
+  warnings = L.geoJSON(null, {
+    style: function (feature) {
+      var color;
+      if (feature.properties.Nivel === 'Muy Alto') {
+        color = '#EF4C4D';
+        opacity = 1;
+      } else if (feature.properties.Nivel === 'Alto') {
+        color = '#FFC44E';
+        opacity = 1;
+      } else if (feature.properties.Nivel === 'Medio') {
+        color = '#FFFF4D';
+        opacity = 1;
+      } else {
+        color = '#FFFFFF';
+        opacity = 1;
+      }
 
-  // Load drainage network
+      return {
+        fillColor: color,
+        fillOpacity: opacity,
+        stroke: true,
+        color: color,
+        weight: 1
+      };
+    }
+  });
+  
+  // Filtrar alertas
+  function filter_warnings(data, nivel){
+    var filteredFeatures = data.features.filter(function(feature) {
+      return feature.properties.Nivel === nivel;
+    });
+    return(filteredFeatures )
+  }
+  
+  // URL y parametros del recurso de hydroshare
+  var url = 'https://geoserver.hydroshare.org/geoserver/HS-e1920951d6194c78948e45ae7b08ec64/wfs';
+  var params = {
+    service: 'WFS',
+    version: '1.1.0',
+    request: 'GetFeature',
+    typeName: 'Advertencia',
+    outputFormat: 'application/json'
+  }; 
+  
+  // Carga los datos WFS utilizando AJAX y agrega los resultados a la capa geoJSON
+  $.ajax({
+    url: url,
+    data: params,
+    dataType: 'json'
+  }).done(function(response){
+    alertas =  {
+      type: 'FeatureCollection',
+      features: filter_warnings(response, "Medio").concat(
+                filter_warnings(response, "Alto"),
+                filter_warnings(response, "Muy Alto")) };
+    warnings.addData(alertas);
+  });
+
+
+
+// Load drainage network
   fetch(
     `${server}/static/hydroviewer_ecuador/geojson/ecuador_geoglows_drainage.geojson`
   )
@@ -170,9 +231,11 @@ window.onload = function () {
       riv = L.geoJSON(layer, {
         style: {
           weight: 1, 
-          color: "#4747C9" 
+          color: "#4747C9",
+          zIndex: 10000
         }
       }).addTo(map);
+      riv.bringToFront();
       // Fit the map to the river bounds
       map.fitBounds(riv.getBounds());
       // Buffer to select rivers
@@ -180,8 +243,6 @@ window.onload = function () {
       // On click function
       map.on('almost:click', showPanel);
     });
-
-  // Retrieve the alets
 
   
 // Load stations
@@ -231,16 +292,4 @@ fetch("get-alerts")
 }; 
  
  
-
-
-
-
-
-
-
-
-
-
-
-
 

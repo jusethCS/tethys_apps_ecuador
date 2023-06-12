@@ -1,5 +1,5 @@
 .control {
-    height: 540px;
+    height: 620px;
     width: 300px;
     background-color: rgba(32, 41, 92, 0.8);
     padding: 10px;
@@ -86,3 +86,33 @@
     background-color: #8000F6;
 }
 
+
+
+
+.table-warning {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.th-warning, .td-warning {
+    padding: 2px;
+    text-align: center;
+    width: 25%;
+    font-weight: normal;
+}
+
+.bajo {
+    background-color: #FFFFFF;
+}
+
+.medio {
+    background-color: #FFFF4D;
+}
+
+.alto {
+    background-color: #FFC44E;
+}
+
+.muy-alto {
+    background-color: #EF4C4D;
+}

@@ -66,7 +66,7 @@ info.onAdd = function (map) {
             var option_custom = `<option value="${item.file}">${item.name}</option>`;
             return(option_custom);
           }).join("");
-          
+    
     // Generate options for River basin districts
     basin = basin.map((item) => {
         var option_custom = `<option value="${item.file}">${item.name}</option>`;
@@ -103,6 +103,22 @@ info.onAdd = function (map) {
                                         <label class="form-check-label" for="check-100yr">Periodo de retorno: 100 años</label>
                                     </div>
                                 </div>
+                                <br>
+                                <label class="label-control" for="select-warnings">Advertencias meteorologicas:</label>
+                                <div class="alert-panel-checkbox">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="check-warning">
+                                        <label class="form-check-label" for="check-warning"> Alertas por lluvias y tormentas </label>
+                                    </div>
+                                    <table class="table-warning" id="table-warning-selector">
+                                        <tr class="tr-warning">
+                                            <th class="th-warning bajo">Bajo</th>
+                                            <th class="th-warning medio">Medio</th>
+                                            <th class="th-warning alto">Alto</th>
+                                            <th class="th-warning muy-alto">Muy Alto</th>
+                                        </tr>
+                                    </table>
+                                </div>    
                                 <br>
                                 <div class="control-group">
                                 <label class="label-control" for="select-loc">Provincia:</label>
@@ -308,3 +324,38 @@ fetch("get-rivers")
             map.removeLayer(est_R100); 
         };
     });
+
+    $('#check-warning').on('change', function () {
+        if($('#check-warning').is(':checked')){
+            warnings.addTo(map);
+            var layers = warnings.getLayers();
+            if (layers[0].feature.properties.Nivel === "Medio") {
+                layers.reverse();
+            }
+            for (var i = 0; i < layers.length; i++) {
+              layers[i].bringToBack();
+            }
+        } else {
+            map.removeLayer(warnings); 
+        };
+    }); 
+
+    $('#table-warning-selector').on('click', function () {
+        $('#warning-modal').modal('show');
+    });
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
